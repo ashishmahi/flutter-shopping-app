@@ -12,6 +12,14 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
+  Future _orderFuture;
+  @override
+  void initState() {
+    _orderFuture =
+        Provider.of<OrderProvider>(context, listen: false).fetchAndSetOrders();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,8 +28,7 @@ class _OrderScreenState extends State<OrderScreen> {
       ),
       drawer: AppDrawer(),
       body: FutureBuilder(
-        future: Provider.of<OrderProvider>(context, listen: false)
-            .fetchAndSetOrders(),
+        future: _orderFuture,
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
