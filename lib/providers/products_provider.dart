@@ -121,14 +121,14 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> deleteItem(String id) async {
     final url =
-        "https://shopping-app-web-server-default-rtdb.firebaseio.com/product/$id.jsonaa";
+        "https://shopping-app-web-server-default-rtdb.firebaseio.com/product/$id.json";
     final existingProductIndex =
         _items.indexWhere((element) => element.id == id);
     var existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
     notifyListeners();
     final res = await http.delete(Uri.parse(url));
-    if (res.statusCode != 200 || res.statusCode != 201) {
+    if (res.statusCode >= 400) {
       _items.insert(existingProductIndex, existingProduct);
       notifyListeners();
       throw NetworkException("Delete failed!");
