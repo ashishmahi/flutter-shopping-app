@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/providers/cart_provider.dart';
+import 'package:http/http.dart' as http;
 
 class CartItem extends StatelessWidget {
   final String id;
@@ -24,12 +25,12 @@ class CartItem extends StatelessWidget {
               title: Text('Are you sure ?'),
               content: Text('Do you want to remove item from the cart ?'),
               actions: [
-                FlatButton(
+                TextButton(
                     onPressed: () {
                       Navigator.of(ctx).pop(false);
                     },
                     child: Text('No')),
-                FlatButton(
+                TextButton(
                     onPressed: () {
                       Navigator.of(ctx).pop(true);
                     },
