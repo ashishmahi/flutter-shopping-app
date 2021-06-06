@@ -10,27 +10,21 @@ import 'package:shopping_app/widgets/product_view_grid.dart';
 enum FavoriteOptions { All, FavoriteItems }
 
 class ProductOverviewScreen extends StatefulWidget {
+  static const routeName = '/productOverview';
   @override
   _ProductOverviewScreenState createState() => _ProductOverviewScreenState();
 }
 
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   var _isInit = true;
-  var _isLoading = false;
+  Future _itemsFuture;
 
   @override
   void didChangeDependencies() {
     if (_isInit) {
-      setState(() {
-        _isLoading = true;
-      });
-      Provider.of<ProductsProvider>(
+      _itemsFuture = Provider.of<ProductsProvider>(
         context,
-      ).getProducts().then((_) {
-        setState(() {
-          _isLoading = false;
-        });
-      });
+      ).getProducts();
     }
     _isInit = false;
     super.didChangeDependencies();
@@ -76,11 +70,20 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : ProductGridView(showFavorites: _showFavorites),
+      body: FutureBuilder(
+          future: _itemsFuture,
+          builder: (context, snapshot) {
+            if ((snapshot.connectionState == ConnectionState.waiting)) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('Failed to fetch products'),
+              );
+            }
+            return ProductGridView(showFavorites: _showFavorites);
+          }),
     );
   }
 }

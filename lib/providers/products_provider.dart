@@ -40,6 +40,10 @@ class ProductsProvider with ChangeNotifier {
     //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     // ),
   ];
+
+  String authToken;
+
+  ProductsProvider(this.authToken, this._items);
   List<Product> get items {
     return [..._items];
   }
@@ -50,8 +54,8 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> getProducts() async {
     try {
-      const url =
-          "https://shopping-app-web-server-default-rtdb.firebaseio.com/product.json";
+      final url =
+          "https://shopping-app-web-server-default-rtdb.firebaseio.com/product.json?auth=$authToken";
 
       final reponse = await http.get(Uri.parse(url));
       final decodedData = json.decode(reponse.body) as Map<String, dynamic>;
@@ -75,8 +79,8 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) {
-    const url =
-        "https://shopping-app-web-server-default-rtdb.firebaseio.com/product.json";
+    final url =
+        "https://shopping-app-web-server-default-rtdb.firebaseio.com/product.json?auth=$authToken";
     return http
         .post(Uri.parse(url),
             body: json.encode({
@@ -106,7 +110,7 @@ class ProductsProvider with ChangeNotifier {
     final indexOf =
         _items.indexWhere((element) => element.id == editedProduct.id);
     final url =
-        "https://shopping-app-web-server-default-rtdb.firebaseio.com/product/$id.json";
+        "https://shopping-app-web-server-default-rtdb.firebaseio.com/product/$id.json?auth=$authToken";
     final res = await http.patch(Uri.parse(url),
         body: json.encode({
           'title': editedProduct.title,
@@ -121,7 +125,7 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> deleteItem(String id) async {
     final url =
-        "https://shopping-app-web-server-default-rtdb.firebaseio.com/product/$id.json";
+        "https://shopping-app-web-server-default-rtdb.firebaseio.com/product/$id.json?auth=$authToken";
     final existingProductIndex =
         _items.indexWhere((element) => element.id == id);
     var existingProduct = _items[existingProductIndex];
