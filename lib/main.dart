@@ -10,6 +10,7 @@ import 'package:shopping_app/screens/edit_product_screen.dart';
 import 'package:shopping_app/screens/oder_screen.dart';
 import 'package:shopping_app/screens/product_details_screen.dart';
 import 'package:shopping_app/screens/product_overview_screen.dart';
+import 'package:shopping_app/screens/splash_screen.dart';
 import 'package:shopping_app/screens/user_product_screen.dart';
 
 void main() {
@@ -21,19 +22,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (context) => AuthProvider(),
-        ),
+        ChangeNotifierProvider.value(value: AuthProvider()),
         ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
           create: (ctx) => ProductsProvider(null, null, []),
           update: (context, auth, previousProducts) {
-            return ProductsProvider(
-                auth.token, auth.userId, previousProducts.items);
+            return previousProducts..updateUser(auth.token, auth.userId);
           },
         ),
-        ChangeNotifierProvider(
-          create: (context) => CartProvider(),
-        ),
+        ChangeNotifierProvider.value(value: CartProvider()),
         ChangeNotifierProxyProvider<AuthProvider, OrderProvider>(
           create: (ctx) => OrderProvider(null, null, []),
           update: (context, auth, previousOrders) {
@@ -54,7 +50,13 @@ class MyApp extends StatelessWidget {
                 ),
                 home: authData.isAuthenticate
                     ? ProductOverviewScreen()
-                    : AuthScreen(),
+                    : FutureBuilder(
+                        future: authData.tryAutoLogin(),
+                        builder: (ctx, authSnapshot) =>
+                            authSnapshot.connectionState ==
+                                    ConnectionState.waiting
+                                ? SplashScreen()
+                                : AuthScreen()),
                 routes: {
                   ProductOverviewScreen.routeName: (ctx) =>
                       ProductOverviewScreen(),

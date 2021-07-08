@@ -146,4 +146,10 @@ class ProductsProvider with ChangeNotifier {
     }
     existingProduct = null;
   }
+
+  void updateUser(String token, String id) {
+    this.userId = id;
+    this.authToken = token;
+    notifyListeners();
+  }
 }
