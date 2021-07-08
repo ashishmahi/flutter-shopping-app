@@ -42,8 +42,13 @@ class ProductsProvider with ChangeNotifier {
   ];
 
   String authToken;
+  String userId;
 
-  ProductsProvider(this.authToken, this._items);
+  ProductsProvider(
+    this.authToken,
+    this.userId,
+    this._items,
+  );
   List<Product> get items {
     return [..._items];
   }
@@ -52,10 +57,12 @@ class ProductsProvider with ChangeNotifier {
     return _items.where((element) => element.isFavorite).toList();
   }
 
-  Future<void> getProducts() async {
+  Future<void> getProducts([bool filterByValue = false]) async {
+    final filterString =
+        filterByValue ? '&orderBy="creatorId"&equalTo="$userId"' : "";
     try {
       final url =
-          "https://shopping-app-web-server-default-rtdb.firebaseio.com/product.json?auth=$authToken";
+          'https://shopping-app-web-server-default-rtdb.firebaseio.com/product.json?auth=$authToken$filterString';
 
       final reponse = await http.get(Uri.parse(url));
       final decodedData = json.decode(reponse.body) as Map<String, dynamic>;
@@ -70,7 +77,6 @@ class ProductsProvider with ChangeNotifier {
       });
       _items = itemsLoaded;
       notifyListeners();
-      print(reponse.body);
     } catch (e) {
       print("erererer");
       print(e);
@@ -88,7 +94,8 @@ class ProductsProvider with ChangeNotifier {
               'description': product.description,
               'price': product.price,
               'imageUrl': product.imageUrl,
-              'isFavorite': product.isFavorite
+              'isFavorite': product.isFavorite,
+              'creatorId': userId
             }))
         .then((response) {
       final newProduct = Product(

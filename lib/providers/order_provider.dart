@@ -10,57 +10,64 @@ class Order {
   final List<CartItem> products;
   final DateTime dateTime;
 
-  Order(
-      {@required this.id,
-      @required this.amount,
-      @required this.products,
-      @required this.dateTime});
+  Order({
+    @required this.id,
+    @required this.amount,
+    @required this.products,
+    @required this.dateTime,
+  });
 }
 
 class OrderProvider with ChangeNotifier {
   List<Order> _orders = [];
   String _authToken;
+  String _userId;
 
-  OrderProvider(this._authToken, this._orders);
+  OrderProvider(this._authToken, this._userId, this._orders);
   List<Order> get orders {
     return [..._orders];
   }
 
   Future<void> fetchAndSetOrders() async {
     final url =
-        'https://shopping-app-web-server-default-rtdb.firebaseio.com/orders.json?auth=$_authToken';
-    final response = await http.get(Uri.parse(url));
-    final List<Order> loadedOrders = [];
-    final extractedData = json.decode(response.body) as Map<String, dynamic>;
-    if (extractedData == null) {
-      return;
+        'https://shopping-app-web-server-default-rtdb.firebaseio.com/userOrder/$_userId/orders.json?auth=$_authToken';
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      final List<Order> loadedOrders = [];
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      if (extractedData == null) {
+        return;
+      }
+      extractedData.forEach((orderId, orderData) {
+        loadedOrders.add(
+          Order(
+            id: orderId,
+            amount: orderData['amount'],
+            dateTime: DateTime.parse(orderData['dateTime']),
+            products: (orderData['products'] as List<dynamic>)
+                .map(
+                  (item) => CartItem(
+                    id: item['id'],
+                    price: item['price'],
+                    quantity: item['quantity'],
+                    title: item['title'],
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      });
+      _orders = loadedOrders.reversed.toList();
+      notifyListeners();
+    } catch (e) {
+      print(e);
     }
-    extractedData.forEach((orderId, orderData) {
-      loadedOrders.add(
-        Order(
-          id: orderId,
-          amount: orderData['amount'],
-          dateTime: DateTime.parse(orderData['dateTime']),
-          products: (orderData['products'] as List<dynamic>)
-              .map(
-                (item) => CartItem(
-                  id: item['id'],
-                  price: item['price'],
-                  quantity: item['quantity'],
-                  title: item['title'],
-                ),
-              )
-              .toList(),
-        ),
-      );
-    });
-    _orders = loadedOrders.reversed.toList();
-    notifyListeners();
   }
 
   Future<void> addOrders(List<CartItem> cartProducts, double total) async {
     final url =
-        'https://shopping-app-web-server-default-rtdb.firebaseio.com/orders.json?auth=$_authToken';
+        'https://shopping-app-web-server-default-rtdb.firebaseio.com/userOrder/$_userId/orders.json?auth=$_authToken';
     final timestamp = DateTime.now();
     try {
       final response = await http.post(
@@ -78,6 +85,7 @@ class OrderProvider with ChangeNotifier {
               .toList(),
         }),
       );
+      print(response.body);
       _orders.insert(
           0,
           Order(

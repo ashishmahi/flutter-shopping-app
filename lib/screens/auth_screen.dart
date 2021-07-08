@@ -102,7 +102,7 @@ class _AuthCardState extends State<AuthCard> {
     'password': '',
   };
   var _isLoading = false;
-  final _passwordController = TextEditingController();
+  final _passwordController = TextEditingController(text: "111111");
 
   void _showErrorPopup(String errorMessage) {
     showDialog(
@@ -196,6 +196,7 @@ class _AuthCardState extends State<AuthCard> {
             child: Column(
               children: <Widget>[
                 TextFormField(
+                  initialValue: "a@a.com",
                   decoration: InputDecoration(labelText: 'E-Mail'),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -216,6 +217,7 @@ class _AuthCardState extends State<AuthCard> {
                     if (value.isEmpty || value.length < 5) {
                       return 'Password is too short!';
                     }
+                    return null;
                   },
                   onSaved: (value) {
                     _authData['password'] = value;
